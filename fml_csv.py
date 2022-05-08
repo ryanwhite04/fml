@@ -33,3 +33,5 @@ with open("translated.csv", "w") as file:
 
 # check that it matches the file I wrote manually
 assert(open("translated.csv").read().strip() == open("basic.csv").read().strip())
+
+print("seems to be working")
