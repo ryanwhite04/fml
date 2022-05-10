@@ -31,5 +31,3 @@ def main():
     writer(stdout).writerows(translate(lines, argv[1:]))
 
 if __name__ == "__main__": main()
-# Usage
-# cat basic.fml | python3 fml_csv.py a b c > translated.csv
