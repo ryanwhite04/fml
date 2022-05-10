@@ -1,35 +1,35 @@
-def parse(row, header=False):
-    return [
-        cell.split("[s]-")[0 if header else 1]
+def parse(row):
+    from re import split, search
+    types = { "s": str, "i": int, "f": float }
+    cells = [ 
+        search(r"^(.+)\[([\w])\]-(.+)", cell).groups()
         for cell 
         in row.strip()[1:-1].split(";")
-        if "[s]-" in cell
     ]
+    return { cell[0]: types[cell[1]](cell[2]) for cell in cells }
 
-# get keys
-assert(parse("(a[s]-1;b[s]-hello;c[s]-has space)", True) == [
-    "a",
-    "b",
-    "c"
-])
-
-# get value
-assert(parse("(a[s]-1;b[s]-hello;c[s]-has space)") == [
-    "1",
-    "hello",
-    "has space"
-])
+assert(parse("(a[i]-1;b[s]-hello;c[f]-1.5)") == {
+    "a": 1,
+    "b": "hello",
+    "c": 1.5,
+})
 
 # parse list of FML lines
-def translate(rows):
-    header = parse(rows[0], True)
-    return [header] + [parse(row) for row in rows]
+def translate(rows, header):
+    rows = [parse(row) for row in rows]
+    return [header] + [
+        [row[col] or "NAN" for col in header]
+        for row
+        in rows
+    ]
 
 # open basic.fml, translate it, and write to translated.csv
-from csv import writer
-with open("translated.csv", "w") as file:
-    lines = open("basic.fml").readlines()
-    writer(file).writerows(translate(lines))
+def main():
+    from csv import writer
+    from sys import stdin, stdout, argv
+    lines = stdin.readlines()
+    writer(stdout).writerows(translate(lines, argv[1:]))
 
-# check that it matches the file I wrote manually
-assert(open("translated.csv").read().strip() == open("basic.csv").read().strip())
+if __name__ == "__main__": main()
+# Usage
+# cat basic.fml | python3 fml_csv.py a b c > translated.csv
